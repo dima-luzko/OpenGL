@@ -15,9 +15,10 @@ import javax.microedition.khronos.opengles.GL10
 
 class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
 
+
     private val POSITION_COUNT = 3
     private val TEXTURE_COUNT = 2
-    private val TIME = 10000L
+    private val TIME = 4000L
     private val STRIDE = (POSITION_COUNT
             + TEXTURE_COUNT) * 4
 
@@ -32,12 +33,24 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
 
     private var programId = 0
 
-    private val mProjectionMatrix = FloatArray(16)
-    private val mViewMatrix = FloatArray(16)
-    private val mMatrix = FloatArray(16)
-    private val mModelMatrix = FloatArray(16)
+    private val mProjectionMatrix = FloatArray(16) // Проекционная матрица
+    private val mViewMatrix = FloatArray(16) // View матрица
+    private val mMatrix = FloatArray(16)   // Итоговая матрица
+    private val mModelMatrix = FloatArray(16) // Model матрица
 
     private var texture = 0
+
+    var centerX = 0f
+    var centerY = 0f
+
+
+    private var angle: Float = 0f
+
+
+    fun setAngle(angle: Float) {
+        this.angle = angle
+    }
+
 
 
     override fun onSurfaceCreated(arg0: GL10?, arg1: EGLConfig?) {
@@ -163,6 +176,9 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
             top *= ratio
         }
         Matrix.frustumM(mProjectionMatrix, 0, left, right, bottom, top, near, far)
+
+        centerX = (width/2).toFloat()
+        centerY = (height/2).toFloat()
     }
 
     private fun createViewMatrix() {
@@ -195,9 +211,11 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
         )
     }
 
-    fun matrixRotateX(angle: Float){
+    private fun matrixRotateX(angle: Float){
         val tempMatrix = FloatArray(16)
-
+        Matrix.rotateM(mModelMatrix,0,angle,0f,-1f,0f)
+        Matrix.multiplyMM(tempMatrix,0,mMatrix,0,mViewMatrix,0)
+        bindMatrix()
     }
 
     private fun bindMatrix() {
@@ -207,13 +225,16 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
     }
 
     override fun onDrawFrame(arg0: GL10?) {
+        val angle = 0.090f * TIME
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 24)
+        //matrixRotateX(angle)
         //setModelMatrix()
     }
 
     private fun setModelMatrix() {
-        val angle = (SystemClock.uptimeMillis() % TIME).toFloat() / TIME * 360
+        val time = (SystemClock.uptimeMillis() % TIME).toFloat()
+        val angle = 0.090f * time
         Matrix.rotateM(mModelMatrix, 0, angle, 0f, 1f, 0f)
         bindMatrix()
     }
