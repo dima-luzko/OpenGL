@@ -5,7 +5,6 @@ import android.content.Context
 import android.opengl.GLES20.*
 import android.opengl.GLSurfaceView
 import android.opengl.Matrix
-import android.os.SystemClock
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
@@ -44,13 +43,8 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
     var centerY = 0f
 
 
-    private var angle: Float = 0f
-
-
-    fun setAngle(angle: Float) {
-        this.angle = angle
-    }
-
+    @Volatile
+    var angle: Float = 0f
 
 
     override fun onSurfaceCreated(arg0: GL10?, arg1: EGLConfig?) {
@@ -73,41 +67,41 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
     private fun prepareData() {
         val vertices = floatArrayOf(
             //back
-            -1.0f, 1.0f, -1.0f,   1f,1f,
-            1.0f, 1.0f, -1.0f,    0f,1f,
-            -1.0f, -1.0f, -1.0f,  1f,0f,
-            1.0f, -1.0f, -1.0f,   0f,0f,
+            -1.0f, 1.0f, -1.0f, 1f, 1f,
+            1.0f, 1.0f, -1.0f, 0f, 1f,
+            -1.0f, -1.0f, -1.0f, 1f, 0f,
+            1.0f, -1.0f, -1.0f, 0f, 0f,
 
             //front
-            -1.0f, 1.0f, 1.0f,    0f,1f,
-            1.0f, 1.0f, 1.0f,     1f,1f,
-            -1.0f, -1.0f, 1.0f,   0f,0f,
-            1.0f, -1.0f, 1.0f,    1f,0f,
+            -1.0f, 1.0f, 1.0f, 0f, 1f,
+            1.0f, 1.0f, 1.0f, 1f, 1f,
+            -1.0f, -1.0f, 1.0f, 0f, 0f,
+            1.0f, -1.0f, 1.0f, 1f, 0f,
 
             //left
-            -1.0f, 1.0f, -1.0f,   0f,1f,
-            -1.0f, -1.0f, -1.0f,  0f,0f,
-            -1.0f, -1.0f, 1.0f,   1f,0f,
-            -1.0f, 1.0f, 1.0f,    1f,1f,
+            -1.0f, 1.0f, -1.0f, 0f, 1f,
+            -1.0f, -1.0f, -1.0f, 0f, 0f,
+            -1.0f, -1.0f, 1.0f, 1f, 0f,
+            -1.0f, 1.0f, 1.0f, 1f, 1f,
 
 
             //right
-            1.0f, 1.0f, -1.0f,    1f,1f,
-            1.0f, -1.0f, -1.0f,   1f,0f,
-            1.0f, -1.0f, 1.0f,    0f,0f,
-            1.0f, 1.0f, 1.0f,     0f,1f,
+            1.0f, 1.0f, -1.0f, 1f, 1f,
+            1.0f, -1.0f, -1.0f, 1f, 0f,
+            1.0f, -1.0f, 1.0f, 0f, 0f,
+            1.0f, 1.0f, 1.0f, 0f, 1f,
 
             //top
-            -1.0f, 1.0f, -1.0f,   0f,1f,
-            -1.0f, 1.0f, 1.0f,    0f,0f,
-            1.0f, 1.0f, 1.0f,     1f,0f,
-            1.0f, 1.0f, -1.0f,    1f,1f,
+            -1.0f, 1.0f, -1.0f, 0f, 1f,
+            -1.0f, 1.0f, 1.0f, 0f, 0f,
+            1.0f, 1.0f, 1.0f, 1f, 0f,
+            1.0f, 1.0f, -1.0f, 1f, 1f,
 
             //bottom
-            -1.0f, -1.0f, -1.0f,  0f,0f,
-            -1.0f, -1.0f, 1.0f,   0f,1f,
-            1.0f, -1.0f, 1.0f,    1f,1f,
-            1.0f, -1.0f, -1.0f,    1f,0f
+            -1.0f, -1.0f, -1.0f, 0f, 0f,
+            -1.0f, -1.0f, 1.0f, 0f, 1f,
+            1.0f, -1.0f, 1.0f, 1f, 1f,
+            1.0f, -1.0f, -1.0f, 1f, 0f
         )
         vertexData = ByteBuffer
             .allocateDirect(vertices.size * 4)
@@ -177,14 +171,14 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
         }
         Matrix.frustumM(mProjectionMatrix, 0, left, right, bottom, top, near, far)
 
-        centerX = (width/2).toFloat()
-        centerY = (height/2).toFloat()
+        centerX = (width / 2).toFloat()
+        centerY = (height / 2).toFloat()
     }
 
     private fun createViewMatrix() {
         // точка положения камеры
         val eyeX = 0f
-        val eyeY = 2f
+        val eyeY = 0f
         val eyeZ = 4f
 
         // точка направления камеры
@@ -211,13 +205,6 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
         )
     }
 
-    private fun matrixRotateX(angle: Float){
-        val tempMatrix = FloatArray(16)
-        Matrix.rotateM(mModelMatrix,0,angle,0f,-1f,0f)
-        Matrix.multiplyMM(tempMatrix,0,mMatrix,0,mViewMatrix,0)
-        bindMatrix()
-    }
-
     private fun bindMatrix() {
         Matrix.multiplyMM(mMatrix, 0, mViewMatrix, 0, mModelMatrix, 0)
         Matrix.multiplyMM(mMatrix, 0, mProjectionMatrix, 0, mMatrix, 0)
@@ -225,22 +212,24 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
     }
 
     override fun onDrawFrame(arg0: GL10?) {
-        val angle = 0.090f * TIME
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 24)
-        //matrixRotateX(angle)
-        //setModelMatrix()
+        rotateX()
     }
 
-    private fun setModelMatrix() {
-        val time = (SystemClock.uptimeMillis() % TIME).toFloat()
-        val angle = 0.090f * time
-        Matrix.rotateM(mModelMatrix, 0, angle, 0f, 1f, 0f)
+    private fun rotateY() {
+        val tempMatrix = FloatArray(16)
+        Matrix.setRotateM(mModelMatrix, 0, angle, 1f, 0f, 0f)
+        Matrix.multiplyMM(tempMatrix, 0, mViewMatrix, 0, mModelMatrix, 0)
         bindMatrix()
     }
 
-
-
+    private fun rotateX() {
+        val tempMatrix = FloatArray(16)
+        Matrix.setRotateM(mModelMatrix, 0, angle, 0f, 1f, 0f)
+        Matrix.multiplyMM(tempMatrix, 0, mViewMatrix, 0, mModelMatrix, 0)
+        bindMatrix()
+    }
 
 
 }

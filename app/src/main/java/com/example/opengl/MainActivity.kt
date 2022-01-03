@@ -6,10 +6,13 @@ import android.opengl.GLSurfaceView
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.example.opengl.test.MyGLSurfaceView
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var mSurface: MainSurfaceView
+
+    private lateinit var gLView: GLSurfaceView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -21,6 +24,9 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "OpenGl ES 2.0 is not supported", Toast.LENGTH_LONG).show()
             finish()
         }
+
+//        gLView = MyGLSurfaceView(this)
+//        setContentView(gLView)
 
         mSurface = this.findViewById(R.id.surface) as MainSurfaceView
 

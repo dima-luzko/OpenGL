@@ -1,40 +1,34 @@
-package com.example.opengl
+package com.example.opengl.test
 
 import android.content.Context
 import android.opengl.GLSurfaceView
-import android.util.AttributeSet
 import android.view.MotionEvent
 
-class MainSurfaceView(context: Context?, attrs: AttributeSet?) : GLSurfaceView(context, attrs) {
-
-    private var glRender : OpenGLRender? = null
+class MyGLSurfaceView(context: Context): GLSurfaceView(context) {
 
     companion object {
-        private const val TOUCH_SCALE_FACTOR = 180.0f / 320f
+        private const val TOUCH_SCALE_FACTOR: Float = 180.0f / 320f
     }
+
+    private val renderer: MyGLRenderer
 
     private var previousX: Float = 0f
     private var previousY: Float = 0f
 
 
     init {
-        init()
+        setEGLContextClientVersion(2)
+        renderer = MyGLRenderer()
+        setRenderer(renderer)
         renderMode = RENDERMODE_WHEN_DIRTY
     }
 
-    /** Метод инициализации рендера **/
-    private fun init () {
-        setEGLContextClientVersion(2)
-        glRender = OpenGLRender(context)
-        setRenderer(glRender)
-    }
 
-    override fun onTouchEvent(event: MotionEvent): Boolean {
+    override fun onTouchEvent(e: MotionEvent): Boolean {
+        val x: Float = e.x
+        val y: Float = e.y
 
-        val x = event.x
-        val y = event.y
-
-        when (event.action) {
+        when (e.action) {
             MotionEvent.ACTION_MOVE -> {
 
                 var dx: Float = x - previousX
@@ -50,7 +44,7 @@ class MainSurfaceView(context: Context?, attrs: AttributeSet?) : GLSurfaceView(c
                     dy *= -1
                 }
 
-                glRender!!.angle += (dx + dy) * TOUCH_SCALE_FACTOR
+                renderer.angle += (dx + dy) * TOUCH_SCALE_FACTOR
                 requestRender()
             }
         }
