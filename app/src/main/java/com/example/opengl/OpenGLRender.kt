@@ -14,34 +14,30 @@ import javax.microedition.khronos.opengles.GL10
 
 class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
 
+    companion object {
+        private const val POSITION_COUNT = 3
+        private const val TEXTURE_COUNT = 2
+        private const val STRIDE = (POSITION_COUNT
+                + TEXTURE_COUNT) * 4
+    }
 
-    private val POSITION_COUNT = 3
-    private val TEXTURE_COUNT = 2
-    private val TIME = 4000L
-    private val STRIDE = (POSITION_COUNT
-            + TEXTURE_COUNT) * 4
-
-
+    private var programId = 0
+    private var texture = 0
     private var vertexData: FloatBuffer? = null
-
-
+    // параметры шейдеров
     private var aPositionLocation = 0
     private var aTextureLocation = 0
     private var uTextureUnitLocation = 0
     private var uMatrixLocation = 0
-
-    private var programId = 0
-
+    // координаты смещения модели
+    private var mX = 0f
+    private var mY = 0f
+    // матрицы преобразований
     private val mProjectionMatrix = FloatArray(16) // Проекционная матрица
     private val mViewMatrix = FloatArray(16) // View матрица
     private val mMatrix = FloatArray(16)   // Итоговая матрица
     private val mModelMatrix = FloatArray(16) // Model матрица
-
-    private var texture = 0
-
-    var centerX = 0f
-    var centerY = 0f
-
+    private val tempMatrix = FloatArray(16)
 
     @Volatile
     var angle: Float = 0f
@@ -55,7 +51,7 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
         prepareData()
         bindData()
         createViewMatrix()
-        Matrix.setIdentityM(mModelMatrix, 0)
+        //Matrix.setIdentityM(mModelMatrix, 0)
     }
 
     override fun onSurfaceChanged(arg0: GL10?, width: Int, height: Int) {
@@ -109,6 +105,30 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
             .asFloatBuffer()
             .put(vertices)
         texture = TextureUtils().loadTexture(context, R.drawable.boxs)
+    }
+
+    /** получение координаты нажатия х  */
+    fun getX(): Float {
+        return mX
+    }
+
+    /** установление координаты нажатия x  */
+    fun setX(x: Float) {
+        var setX = x
+        if (setX > 360) setX = 0f else if (setX < 0) setX = 360f
+        mX = setX
+    }
+
+    /** получение координаты нажатия y  */
+    fun getY(): Float {
+        return mY
+    }
+
+    /** установление координаты нажатия y  */
+    fun setY(y: Float) {
+        var setY = y
+        if (setY > 360) setY = 0f else if (setY < 0) setY = 360f
+        mY = setY
     }
 
     private fun createAndUseProgram() {
@@ -171,8 +191,6 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
         }
         Matrix.frustumM(mProjectionMatrix, 0, left, right, bottom, top, near, far)
 
-        centerX = (width / 2).toFloat()
-        centerY = (height / 2).toFloat()
     }
 
     private fun createViewMatrix() {
@@ -214,19 +232,13 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
     override fun onDrawFrame(arg0: GL10?) {
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 24)
-        rotateX()
+        rotate()
     }
 
-    private fun rotateY() {
-        val tempMatrix = FloatArray(16)
-        Matrix.setRotateM(mModelMatrix, 0, angle, 1f, 0f, 0f)
-        Matrix.multiplyMM(tempMatrix, 0, mViewMatrix, 0, mModelMatrix, 0)
-        bindMatrix()
-    }
-
-    private fun rotateX() {
-        val tempMatrix = FloatArray(16)
-        Matrix.setRotateM(mModelMatrix, 0, angle, 0f, 1f, 0f)
+    private fun rotate() {
+        Matrix.setIdentityM(mModelMatrix, 0)
+        Matrix.rotateM(mModelMatrix, 0, mX, 0.0f, 1.0f, 0.0f)
+        Matrix.rotateM(mModelMatrix, 0, mY, 1.0f, 0.0f, 0.0f)
         Matrix.multiplyMM(tempMatrix, 0, mViewMatrix, 0, mModelMatrix, 0)
         bindMatrix()
     }
