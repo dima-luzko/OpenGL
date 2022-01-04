@@ -4,11 +4,12 @@ import android.content.Context
 import android.graphics.PixelFormat
 import android.opengl.GLSurfaceView
 import android.util.AttributeSet
+import android.util.Log
 import android.view.MotionEvent
 
 class MainSurfaceView(context: Context?, attrs: AttributeSet?) : GLSurfaceView(context, attrs) {
     companion object {
-        private const val TOUCH_SCALE_FACTOR = 180.0f / 320f
+        private const val TOUCH_SCALE_FACTOR = 90.0f / 320f
         private const val TOUCH_SCALE_FACTOR_X = 90.0f / 320
         private const val TOUCH_SCALE_FACTOR_Y = 45.0f / 320
     }
@@ -41,15 +42,18 @@ class MainSurfaceView(context: Context?, attrs: AttributeSet?) : GLSurfaceView(c
                 val dx: Float = x - previousX
                 val dy: Float = y - previousY
                 val oldX = glRender!!.getX()
+                val oldY = glRender!!.getY()
                 glRender!!.setX(oldX + dx * TOUCH_SCALE_FACTOR_X)
                 if (oldX in 90.0..280.0) {
-                    glRender!!.setY(glRender!!.getY() - dy * TOUCH_SCALE_FACTOR_Y)
+                    glRender!!.setY(oldY - dy * TOUCH_SCALE_FACTOR_Y)
+                    Log.d("LOX","rotate_up")
                 } else {
-                    glRender!!.setY(glRender!!.getY() + dy * TOUCH_SCALE_FACTOR_Y)
+                    glRender!!.setY(oldY + dy * TOUCH_SCALE_FACTOR_Y)
+                    Log.d("LOX","rotate_down")
                 }
 
 //                glRender!!.angle += (dx + dy) * TOUCH_SCALE_FACTOR
-           //   requestRender()
+                //   requestRender()
             }
         }
 

@@ -2,6 +2,7 @@ package com.example.opengl
 
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.opengl.GLES20.*
 import android.opengl.GLSurfaceView
 import android.opengl.Matrix
@@ -47,7 +48,7 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
 
 
     override fun onSurfaceCreated(arg0: GL10?, arg1: EGLConfig?) {
-        glClearColor(0f, 0f, 0f, 1f)
+        glClearColor(0f, 1f, 0f, 1f)
         glEnable(GL_DEPTH_TEST)
         createAndUseProgram()
         getLocations()
@@ -66,83 +67,11 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
     private fun prepareData() {
        textureArray = intArrayOf(R.drawable.box0,R.drawable.box1,
             R.drawable.box2,R.drawable.box3,
-            R.drawable.box4,R.drawable.box5)
+            R.drawable.box4,R.drawable.image)
+
+
 
         val vertices = floatArrayOf(
-//            //back
-//            -1.0f, 1.0f, -1.0f, 1f, 1f,
-//            1.0f, 1.0f, -1.0f, 0f, 1f,
-//            -1.0f, -1.0f, -1.0f, 1f, 0f,
-//            1.0f, -1.0f, -1.0f, 0f, 0f,
-//
-//            //front
-//            -1.0f, 1.0f, 1.0f, 0f, 1f,
-//            1.0f, 1.0f, 1.0f, 1f, 1f,
-//            -1.0f, -1.0f, 1.0f, 0f, 0f,
-//            1.0f, -1.0f, 1.0f, 1f, 0f,
-//
-//            //left
-//            -1.0f, 1.0f, -1.0f, 0f, 1f,
-//            -1.0f, -1.0f, -1.0f, 0f, 0f,
-//            -1.0f, -1.0f, 1.0f, 1f, 0f,
-//            -1.0f, 1.0f, 1.0f, 1f, 1f,
-//
-//
-//            //right
-//            1.0f, 1.0f, -1.0f, 1f, 1f,
-//            1.0f, -1.0f, -1.0f, 1f, 0f,
-//            1.0f, -1.0f, 1.0f, 0f, 0f,
-//            1.0f, 1.0f, 1.0f, 0f, 1f,
-//
-//            //top
-//            -1.0f, 1.0f, -1.0f, 0f, 1f,
-//            -1.0f, 1.0f, 1.0f, 0f, 0f,
-//            1.0f, 1.0f, 1.0f, 1f, 0f,
-//            1.0f, 1.0f, -1.0f, 1f, 1f,
-//
-//            //bottom
-//            -1.0f, -1.0f, -1.0f, 0f, 0f,
-//            -1.0f, -1.0f, 1.0f, 0f, 1f,
-//            1.0f, -1.0f, 1.0f, 1f, 1f,
-//            1.0f, -1.0f, -1.0f, 1f, 0f
-
-//            //back
-//            -1.0f, 1.0f, -1.0f,
-//            1.0f, 1.0f, -1.0f,
-//            -1.0f, -1.0f, -1.0f,
-//            1.0f, -1.0f, -1.0f,
-//
-//            //front
-//            -1.0f, 1.0f, 1.0f,
-//            1.0f, 1.0f, 1.0f,
-//            -1.0f, -1.0f, 1.0f,
-//            1.0f, -1.0f, 1.0f,
-//
-//            //left
-//            -1.0f, 1.0f, -1.0f,
-//            -1.0f, -1.0f, -1.0f,
-//            -1.0f, -1.0f, 1.0f,
-//            -1.0f, 1.0f, 1.0f,
-//
-//
-//            //right
-//            1.0f, 1.0f, -1.0f,
-//            1.0f, -1.0f, -1.0f,
-//            1.0f, -1.0f, 1.0f,
-//            1.0f, 1.0f, 1.0f,
-//
-//            //top
-//            -1.0f, 1.0f, -1.0f,
-//            -1.0f, 1.0f, 1.0f,
-//            1.0f, 1.0f, 1.0f,
-//            1.0f, 1.0f, -1.0f,
-//
-//            //bottom
-//            -1.0f, -1.0f, -1.0f,
-//            -1.0f, -1.0f, 1.0f,
-//            1.0f, -1.0f, 1.0f,
-//            1.0f, -1.0f, -1.0f
-
             -1f,  1f,  1f,
             1f,  1f,  1f,
             -1f, -1f,  1f,
@@ -152,6 +81,7 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
             -1f, -1f, -1f,
             1f, -1f, -1f
         )
+
         vertexData = ByteBuffer
             .allocateDirect(vertices.size * 4)
             .order(ByteOrder.nativeOrder())
@@ -234,19 +164,9 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
             false, 0, vertexData
         )
         glEnableVertexAttribArray(aPositionLocation)
-
-//        // координаты текстур
-//        vertexData!!.position(0)
-//        glVertexAttribPointer(
-//            aTextureLocation, TEXTURE_COUNT, GL_FLOAT,
-//            false, 0, vertexData
-//        )
-//        glEnableVertexAttribArray(aTextureLocation)
-
         // помещаем текстуру в target CUBE_MAP юнита 0
         glActiveTexture(GL_TEXTURE0)
         glBindTexture(GL_TEXTURE_CUBE_MAP, texture)
-
         // юнит текстуры
         glUniform1i(uTextureUnitLocation, 0)
     }
@@ -311,16 +231,12 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
 
     override fun onDrawFrame(arg0: GL10?) {
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
-        //glDrawArrays(GL_TRIANGLES, texture, 24)
-
-        //glDrawElements(GL_TRIANGLES,24,GL_UNSIGNED_BYTE,0)
         Matrix.setIdentityM(mModelMatrix, 0)
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_BYTE, indexArray);
         rotate()
     }
 
     private fun rotate() {
-        //Matrix.setIdentityM(mModelMatrix, 0)
         Matrix.rotateM(mModelMatrix, 0, mX, 0.0f, 1.0f, 0.0f)
         Matrix.rotateM(mModelMatrix, 0, mY, 1.0f, 0.0f, 0.0f)
         Matrix.multiplyMM(tempMatrix, 0, mViewMatrix, 0, mModelMatrix, 0)
