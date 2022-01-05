@@ -46,17 +46,13 @@ class MainSurfaceView(context: Context?, attrs: AttributeSet?) : GLSurfaceView(c
                 glRender!!.setX(oldX + dx * TOUCH_SCALE_FACTOR_X)
                 if (oldX in 90.0..280.0) {
                     glRender!!.setY(oldY - dy * TOUCH_SCALE_FACTOR_Y)
-                    Log.d("LOX","rotate_up")
                 } else {
                     glRender!!.setY(oldY + dy * TOUCH_SCALE_FACTOR_Y)
-                    Log.d("LOX","rotate_down")
                 }
-
 //                glRender!!.angle += (dx + dy) * TOUCH_SCALE_FACTOR
                 //   requestRender()
             }
         }
-
         previousX = x
         previousY = y
         return true

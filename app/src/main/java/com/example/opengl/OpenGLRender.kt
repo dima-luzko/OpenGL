@@ -2,10 +2,11 @@ package com.example.opengl
 
 
 import android.content.Context
+import android.opengl.GLES20
 import android.opengl.GLES20.*
 import android.opengl.GLSurfaceView
 import android.opengl.Matrix
-import android.widget.Button
+import com.example.opengl.data.ModelComponent
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
@@ -17,18 +18,14 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
 
     companion object {
         private const val POSITION_COUNT = 3
-//        private const val TEXTURE_COUNT = 2
-//        private const val STRIDE = (POSITION_COUNT
-//                + TEXTURE_COUNT) * 4
     }
-
 
     private var programId = 0
     private var texture = 0
-    private var vertexData: FloatBuffer? = null
-    private var textureArray = IntArray(16)
-    private var textureArrayForSecondVertices = IntArray(16)
+    private var buffer: FloatBuffer? = null
     private var indexArray: ByteBuffer? = null
+    private var textureArrayFirstModel = IntArray(16)
+    private var textureArraySecondModel = IntArray(16)
 
     // параметры шейдеров
     private var aPositionLocation = 0
@@ -56,8 +53,7 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
         glEnable(GL_DEPTH_TEST)
         createAndUseProgram()
         getLocations()
-        prepareData()
-        bindData()
+        setTexture()
         createViewMatrix()
         Matrix.setIdentityM(mModelMatrix, 0)
     }
@@ -68,44 +64,73 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
         bindMatrix()
     }
 
-    private fun prepareData() {
-        textureArray = intArrayOf(
-            R.drawable.box0, R.drawable.box1,
-            R.drawable.box2, R.drawable.box3,
-            R.drawable.box4, R.drawable.box5
-        )
-
-        textureArrayForSecondVertices = intArrayOf(
-            R.drawable.logo, R.drawable.logo,
-            R.drawable.logo, R.drawable.logo,
-            R.drawable.logo, R.drawable.logo
-        )
-
-        val vertices = floatArrayOf(
-            -1f, 1f, 1f,
-            1f, 1f, 1f,
-            -1f, -1f, 1f,
-            1f, -1f, 1f,
-            -1f, 1f, -1f,
-            1f, 1f, -1f,
-            -1f, -1f, -1f,
-            1f, -1f, -1f,
-        )
-
-        val secondVertices = vertices.map {
-            if (it == -1f) {
-                it - 0.1f
-            } else {
-                it + 0.1f
-            }
-        }.toFloatArray()
-
-        vertexData = ByteBuffer
-            .allocateDirect(vertices.size * 4)
+    fun vertexArray(vertexData: FloatArray) {
+        buffer = ByteBuffer
+            .allocateDirect(vertexData.size * 4)
             .order(ByteOrder.nativeOrder())
             .asFloatBuffer()
-            .put(vertices)
+            .put(vertexData)
+    }
 
+    fun getVertexAttribute(
+        attributeLocation: Int,
+        componentCount: Int,
+        texture: Int,
+        textureLocation: Int
+    ) {
+        // координаты вершин
+        buffer!!.position(0)
+        glVertexAttribPointer(
+            attributeLocation, componentCount, GLES20.GL_FLOAT,
+            false, 0, buffer
+        )
+        GLES20.glEnableVertexAttribArray(attributeLocation)
+        // помещаем текстуру в target CUBE_MAP юнита 0
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_CUBE_MAP, texture)
+        // юнит текстуры
+        GLES20.glUniform1i(textureLocation, 0)
+    }
+
+    private fun bindFirstModel() {
+        textureArrayFirstModel = ModelComponent().createTexture(
+            R.drawable.box0,
+            R.drawable.box1,
+            R.drawable.box2,
+            R.drawable.box3,
+            R.drawable.box4,
+            R.drawable.box5
+        )
+        texture = TextureUtils().loadTexture(context, textureArrayFirstModel)
+        vertexArray(ModelComponent().verticesFirstModel)
+        getVertexAttribute(
+            aPositionLocation,
+            POSITION_COUNT,
+            texture,
+            uTextureUnitLocation
+        )
+    }
+
+    private fun bindSecondModel() {
+        textureArraySecondModel = ModelComponent().createTexture(
+            R.drawable.logo,
+            R.drawable.logo,
+            R.drawable.logo,
+            R.drawable.logo,
+            R.drawable.logo,
+            R.drawable.logo
+        )
+        texture = TextureUtils().loadTexture(context, textureArraySecondModel)
+        vertexArray(ModelComponent().verticesSecondModel)
+        getVertexAttribute(
+            aPositionLocation,
+            POSITION_COUNT,
+            texture,
+            uTextureUnitLocation
+        )
+    }
+
+    private fun setTexture() {
         indexArray = ByteBuffer.allocateDirect(36)
             .put(
                 byteArrayOf( // грани куба
@@ -129,9 +154,7 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
                     7, 2, 3
                 )
             )
-
         indexArray?.position(0)
-        texture = TextureUtils().loadTexture(context, textureArray)
     }
 
     /** получение координаты нажатия х **/
@@ -171,21 +194,6 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
         aPositionLocation = glGetAttribLocation(programId, "a_Position")
         uTextureUnitLocation = glGetUniformLocation(programId, "u_TextureUnit")
         uMatrixLocation = glGetUniformLocation(programId, "u_Matrix")
-    }
-
-    private fun bindData() {
-        // координаты вершин
-        vertexData!!.position(0)
-        glVertexAttribPointer(
-            aPositionLocation, POSITION_COUNT, GL_FLOAT,
-            false, 0, vertexData
-        )
-        glEnableVertexAttribArray(aPositionLocation)
-        // помещаем текстуру в target CUBE_MAP юнита 0
-        glActiveTexture(GL_TEXTURE0)
-        glBindTexture(GL_TEXTURE_CUBE_MAP, texture)
-        // юнит текстуры
-        glUniform1i(uTextureUnitLocation, 0)
     }
 
     private fun createProjectionMatrix(width: Int, height: Int) {
@@ -248,12 +256,21 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
     override fun onDrawFrame(arg0: GL10?) {
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
         Matrix.setIdentityM(mModelMatrix, 0)
-        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_BYTE, indexArray)
+
         rotate()
+
+        bindFirstModel()
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_BYTE, indexArray)
+
+
+//        bindSecondModel()
+//        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_BYTE, indexArray)
+
     }
 
     private fun rotate() {
         Matrix.rotateM(mModelMatrix, 0, mX, 0.0f, 1.0f, 0.0f)
+       // Matrix.setRotateM(mModelMatrix,0,mX,0.0f,1.0f,0.0f)
         Matrix.rotateM(mModelMatrix, 0, mY, 1.0f, 0.0f, 0.0f)
         Matrix.multiplyMM(tempMatrix, 0, mViewMatrix, 0, mModelMatrix, 0)
         bindMatrix()
