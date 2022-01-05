@@ -7,7 +7,6 @@ import android.opengl.GLES10.*
 import android.opengl.GLES20
 import android.opengl.GLES20.GL_TEXTURE_CUBE_MAP
 import android.opengl.GLUtils
-import android.util.Log
 
 
 class TextureUtils {
@@ -43,7 +42,7 @@ class TextureUtils {
             GLES20.GL_LINEAR
         )
         GLES20.glTexParameteri(
-            GLES20.GL_TEXTURE_CUBE_MAP,
+            GL_TEXTURE_CUBE_MAP,
             GLES20.GL_TEXTURE_MAG_FILTER,
             GLES20.GL_LINEAR
         )

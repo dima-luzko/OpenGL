@@ -2,10 +2,10 @@ package com.example.opengl
 
 
 import android.content.Context
-import android.graphics.Bitmap
 import android.opengl.GLES20.*
 import android.opengl.GLSurfaceView
 import android.opengl.Matrix
+import android.widget.Button
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
@@ -22,26 +22,30 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
 //                + TEXTURE_COUNT) * 4
     }
 
+
     private var programId = 0
     private var texture = 0
     private var vertexData: FloatBuffer? = null
+    private var textureArray = IntArray(16)
+    private var textureArrayForSecondVertices = IntArray(16)
+    private var indexArray: ByteBuffer? = null
+
     // параметры шейдеров
     private var aPositionLocation = 0
     private var aTextureLocation = 0
     private var uTextureUnitLocation = 0
     private var uMatrixLocation = 0
+
     // координаты смещения модели
     private var mX = 0f
     private var mY = 0f
+
     // матрицы преобразований
     private val mProjectionMatrix = FloatArray(16) // Проекционная матрица
     private val mViewMatrix = FloatArray(16) // View матрица
     private val mMatrix = FloatArray(16)   // Итоговая матрица
     private val mModelMatrix = FloatArray(16) // Model матрица
     private val tempMatrix = FloatArray(16)
-    private var textureArray = IntArray(16)
-
-    private var indexArray: ByteBuffer? = null
 
     @Volatile
     var angle: Float = 0f
@@ -65,22 +69,36 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
     }
 
     private fun prepareData() {
-       textureArray = intArrayOf(R.drawable.box0,R.drawable.box1,
-            R.drawable.box2,R.drawable.box3,
-            R.drawable.box4,R.drawable.image)
+        textureArray = intArrayOf(
+            R.drawable.box0, R.drawable.box1,
+            R.drawable.box2, R.drawable.box3,
+            R.drawable.box4, R.drawable.box5
+        )
 
-
+        textureArrayForSecondVertices = intArrayOf(
+            R.drawable.logo, R.drawable.logo,
+            R.drawable.logo, R.drawable.logo,
+            R.drawable.logo, R.drawable.logo
+        )
 
         val vertices = floatArrayOf(
-            -1f,  1f,  1f,
-            1f,  1f,  1f,
-            -1f, -1f,  1f,
-            1f, -1f,  1f,
-            -1f,  1f, -1f,
-            1f,  1f, -1f,
+            -1f, 1f, 1f,
+            1f, 1f, 1f,
+            -1f, -1f, 1f,
+            1f, -1f, 1f,
+            -1f, 1f, -1f,
+            1f, 1f, -1f,
             -1f, -1f, -1f,
-            1f, -1f, -1f
+            1f, -1f, -1f,
         )
+
+        val secondVertices = vertices.map {
+            if (it == -1f) {
+                it - 0.1f
+            } else {
+                it + 0.1f
+            }
+        }.toFloatArray()
 
         vertexData = ByteBuffer
             .allocateDirect(vertices.size * 4)
@@ -113,28 +131,27 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
             )
 
         indexArray?.position(0)
-
-        texture = TextureUtils().loadTexture(context, textureArray )
+        texture = TextureUtils().loadTexture(context, textureArray)
     }
 
-    /** получение координаты нажатия х  */
+    /** получение координаты нажатия х **/
     fun getX(): Float {
         return mX
     }
 
-    /** установление координаты нажатия x  */
+    /** установление координаты нажатия x **/
     fun setX(x: Float) {
         var setX = x
         if (setX > 360) setX = 0f else if (setX < 0) setX = 360f
         mX = setX
     }
 
-    /** получение координаты нажатия y  */
+    /** получение координаты нажатия y **/
     fun getY(): Float {
         return mY
     }
 
-    /** установление координаты нажатия y  */
+    /** установление координаты нажатия y **/
     fun setY(y: Float) {
         var setY = y
         if (setY > 360) setY = 0f else if (setY < 0) setY = 360f
@@ -189,14 +206,13 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
             top *= ratio
         }
         Matrix.frustumM(mProjectionMatrix, 0, left, right, bottom, top, near, far)
-
     }
 
     private fun createViewMatrix() {
         // точка положения камеры
         val eyeX = 0f
         val eyeY = 0f
-        val eyeZ = 4f
+        val eyeZ = 6f
 
         // точка направления камеры
         val centerX = 0f
@@ -232,7 +248,7 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
     override fun onDrawFrame(arg0: GL10?) {
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
         Matrix.setIdentityM(mModelMatrix, 0)
-        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_BYTE, indexArray);
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_BYTE, indexArray)
         rotate()
     }
 
@@ -242,6 +258,4 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
         Matrix.multiplyMM(tempMatrix, 0, mViewMatrix, 0, mModelMatrix, 0)
         bindMatrix()
     }
-
-
 }
