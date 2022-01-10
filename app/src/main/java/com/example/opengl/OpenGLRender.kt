@@ -259,12 +259,25 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
 
         rotate()
 
+        glEnable(GL_CULL_FACE)
+        glCullFace(GL_BACK)
+        glFrontFace(GL_CCW)
+
+        bindSecondModel()
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_BYTE, indexArray)
+
         bindFirstModel()
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_BYTE, indexArray)
 
+        glEnable(GL_CULL_FACE)
+        glCullFace(GL_BACK)
+        glFrontFace(GL_CW)
 
-//        bindSecondModel()
-//        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_BYTE, indexArray)
+        bindFirstModel()
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_BYTE, indexArray)
+
+        bindSecondModel()
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_BYTE, indexArray)
 
     }
 
