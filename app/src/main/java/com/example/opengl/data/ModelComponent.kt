@@ -1,7 +1,7 @@
 package com.example.opengl.data
 
 
-class ModelComponent {
+object ModelComponent {
 
     val verticesFirstModel = floatArrayOf(
         -1f, 1f, 1f,

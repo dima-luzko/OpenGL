@@ -12,6 +12,10 @@ import java.nio.ByteOrder
 import java.nio.FloatBuffer
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
+import kotlin.math.max
+import kotlin.math.sqrt
+import androidx.renderscript.Float3
+import androidx.renderscript.Float4
 
 
 class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
@@ -93,7 +97,7 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
     }
 
     private fun bindFirstModel() {
-        textureArrayFirstModel = ModelComponent().createTexture(
+        textureArrayFirstModel = ModelComponent.createTexture(
             R.drawable.box0,
             R.drawable.box1,
             R.drawable.box2,
@@ -102,7 +106,7 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
             R.drawable.box5
         )
         texture = TextureUtils().loadTexture(context, textureArrayFirstModel)
-        vertexArray(ModelComponent().verticesFirstModel)
+        vertexArray(ModelComponent.verticesFirstModel)
         getVertexAttribute(
             aPositionLocation,
             POSITION_COUNT,
@@ -112,7 +116,7 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
     }
 
     private fun bindSecondModel() {
-        textureArraySecondModel = ModelComponent().createTexture(
+        textureArraySecondModel = ModelComponent.createTexture(
             R.drawable.logo,
             R.drawable.logo,
             R.drawable.logo,
@@ -121,7 +125,7 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
             R.drawable.logo
         )
         texture = TextureUtils().loadTexture(context, textureArraySecondModel)
-        vertexArray(ModelComponent().verticesSecondModel)
+        vertexArray(ModelComponent.verticesSecondModel)
         getVertexAttribute(
             aPositionLocation,
             POSITION_COUNT,
@@ -252,6 +256,59 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
         glUniformMatrix4fv(uMatrixLocation, 1, false, mMatrix, 0)
     }
 
+    data class Coords(val pos: Float4)
+
+    private fun addElementToArray(
+        arr: Array<Pair<Float, Int>>,
+        element1: Float,
+        element2: Int
+    ): Array<Pair<Float, Int>> {
+        val newArray = arr.toMutableList()
+        newArray.add(Pair(element1, element2))
+        return newArray.toTypedArray()
+    }
+
+    private fun addElementToArray(arr: Array<Float>, element1: Float): Array<Float> {
+        val newArray = arr.toMutableList()
+        newArray.add(element1)
+        return newArray.toTypedArray()
+    }
+
+
+    private fun buildRenderIndices(coords: Array<Coords>): IntArray {
+        val cubeVertsCount = 36
+        val rectVertsCount = 6
+        val maxDrsCubes: Array<Float> = emptyArray()
+        var maxDrCube = 0.0f
+        val maxDrsRects: Array<Pair<Float, Int>> = emptyArray()
+        var maxDrRect = 0.0f
+
+        var cubeIdx = 0
+        for (i in 0..coords.count()) {
+            val pos = coords[i].pos
+            val w = coords[i].pos.w
+            val nextPos = Float3(pos.x / w, pos.y / w, pos.z / w)
+            val zero = Float3(0.0f, 0.0f, -1000.0f)
+            val dr = sqrt(zero.x - nextPos.x) + sqrt(zero.y - nextPos.y) + sqrt(zero.z - nextPos.z)
+
+            maxDrRect = max(dr, maxDrRect)
+            maxDrCube = max(dr, maxDrCube)
+
+            if ((i + 1) % rectVertsCount == 0) {
+                addElementToArray(maxDrsRects, maxDrRect, cubeIdx)
+                maxDrRect = 0.0f
+            }
+
+            if ((i + 1) % cubeVertsCount == 0) {
+                addElementToArray(maxDrsCubes, maxDrCube)
+                cubeIdx += 1
+            }
+        }
+
+
+
+
+    }
 
     override fun onDrawFrame(arg0: GL10?) {
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
@@ -283,7 +340,7 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
 
     private fun rotate() {
         Matrix.rotateM(mModelMatrix, 0, mX, 0.0f, 1.0f, 0.0f)
-       // Matrix.setRotateM(mModelMatrix,0,mX,0.0f,1.0f,0.0f)
+        // Matrix.setRotateM(mModelMatrix,0,mX,0.0f,1.0f,0.0f)
         Matrix.rotateM(mModelMatrix, 0, mY, 1.0f, 0.0f, 0.0f)
         Matrix.multiplyMM(tempMatrix, 0, mViewMatrix, 0, mModelMatrix, 0)
         bindMatrix()
