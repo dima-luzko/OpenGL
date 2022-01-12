@@ -6,6 +6,7 @@ import android.opengl.GLES20
 import android.opengl.GLES20.*
 import android.opengl.GLSurfaceView
 import android.opengl.Matrix
+import android.util.Log
 import com.example.opengl.data.ModelComponent
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -275,7 +276,9 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
     }
 
 
-    private fun buildRenderIndices(coords: Array<Coords>): IntArray {
+
+
+    private fun buildRenderIndices(coords: Array<Coords>): Array<Int> {
         val cubeVertsCount = 36
         val rectVertsCount = 6
         val maxDrsCubes: Array<Float> = emptyArray()
@@ -305,9 +308,23 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
             }
         }
 
+        var _res: Array<Int> = (0..maxDrsRects.count()).toList().toTypedArray()
+        _res.sort{ leftIdx: Int, rightIdx: Int ->
+            val idx0 = maxDrsRects[leftIdx].second
+            val idx1 = maxDrsRects[rightIdx].second
 
+            return@sort maxDrsCubes[idx0] > maxDrsCubes[idx1]
+        }
 
+        var res: Array<Int> = emptyArray()
 
+        for (chunk in _res.toList().chunked(6)) {
+            chunk.toTypedArray().sort { leftIdx: Int, rightIdx: Int ->
+                maxDrsRects[leftIdx].first > maxDrsRects[rightIdx].first
+            }
+        }
+
+        return res
     }
 
     override fun onDrawFrame(arg0: GL10?) {
