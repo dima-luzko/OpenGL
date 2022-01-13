@@ -199,6 +199,8 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
         aPositionLocation = glGetAttribLocation(programId, "a_Position")
         uTextureUnitLocation = glGetUniformLocation(programId, "u_TextureUnit")
         uMatrixLocation = glGetUniformLocation(programId, "u_Matrix")
+
+        val a = ModelComponent.verticesFirstModel
     }
 
     private fun createProjectionMatrix(width: Int, height: Int) {
@@ -275,7 +277,17 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
         return newArray.toTypedArray()
     }
 
+    private fun addElementToArray (arr: Array<Int>,element: Array<Int>) : Array<Int>{
+        val newArray = arr.toMutableList()
+        newArray.addAll(element)
+        return newArray.toTypedArray()
+    }
 
+    fun a (): Float4 {
+        val b = Matrix.multiplyMV(ModelComponent.verticesFirstModel,0,mMatrix,0,ModelComponent.verticesFirstModel,0)
+    }
+
+    val coord = arrayOf(Coords(a()))
 
 
     private fun buildRenderIndices(coords: Array<Coords>): Array<Int> {
@@ -308,20 +320,17 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
             }
         }
 
-        var _res: Array<Int> = (0..maxDrsRects.count()).toList().toTypedArray()
-        _res.sort{ leftIdx: Int, rightIdx: Int ->
-            val idx0 = maxDrsRects[leftIdx].second
-            val idx1 = maxDrsRects[rightIdx].second
-
-            return@sort maxDrsCubes[idx0] > maxDrsCubes[idx1]
+        val _res: Array<Int> = (0..maxDrsRects.count()).toList().toTypedArray()
+        _res.sortBy{
+            maxDrsCubes[maxDrsRects[it].second]
         }
 
-        var res: Array<Int> = emptyArray()
-
+        val res: Array<Int> = emptyArray()
         for (chunk in _res.toList().chunked(6)) {
-            chunk.toTypedArray().sort { leftIdx: Int, rightIdx: Int ->
-                maxDrsRects[leftIdx].first > maxDrsRects[rightIdx].first
+            chunk.toTypedArray().sortBy {
+                maxDrsRects[it].first
             }
+            addElementToArray(res,chunk.toTypedArray())
         }
 
         return res
