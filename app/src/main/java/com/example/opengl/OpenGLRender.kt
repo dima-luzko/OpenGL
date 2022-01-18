@@ -6,7 +6,8 @@ import android.opengl.GLES20
 import android.opengl.GLES20.*
 import android.opengl.GLSurfaceView
 import android.opengl.Matrix
-import android.util.Log
+import androidx.renderscript.Float3
+import androidx.renderscript.Float4
 import com.example.opengl.data.ModelComponent
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -15,8 +16,6 @@ import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 import kotlin.math.max
 import kotlin.math.sqrt
-import androidx.renderscript.Float3
-import androidx.renderscript.Float4
 
 
 class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
@@ -24,7 +23,6 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
     companion object {
         private const val POSITION_COUNT = 3
     }
-
     private var programId = 0
     private var texture = 0
     private var buffer: FloatBuffer? = null
@@ -199,8 +197,6 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
         aPositionLocation = glGetAttribLocation(programId, "a_Position")
         uTextureUnitLocation = glGetUniformLocation(programId, "u_TextureUnit")
         uMatrixLocation = glGetUniformLocation(programId, "u_Matrix")
-
-        val a = ModelComponent.verticesFirstModel
     }
 
     private fun createProjectionMatrix(width: Int, height: Int) {
@@ -259,7 +255,7 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
         glUniformMatrix4fv(uMatrixLocation, 1, false, mMatrix, 0)
     }
 
-    data class Coords(val pos: Float4)
+
 
     private fun addElementToArray(
         arr: Array<Pair<Float, Int>>,
@@ -283,14 +279,7 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
         return newArray.toTypedArray()
     }
 
-    fun a (): Float4 {
-        val b = Matrix.multiplyMV(ModelComponent.verticesFirstModel,0,mMatrix,0,ModelComponent.verticesFirstModel,0)
-    }
-
-    val coord = arrayOf(Coords(a()))
-
-
-    private fun buildRenderIndices(coords: Array<Coords>): Array<Int> {
+    private fun buildRenderIndices(coords: Array<ModelComponent.Vertex>): Array<Int> {
         val cubeVertsCount = 36
         val rectVertsCount = 6
         val maxDrsCubes: Array<Float> = emptyArray()
