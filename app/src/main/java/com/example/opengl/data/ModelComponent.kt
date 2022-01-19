@@ -1,5 +1,6 @@
 package com.example.opengl.data
 
+import android.util.Log
 import androidx.renderscript.Float4
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -35,22 +36,48 @@ object ModelComponent {
         Vertex(pos = c),
         Vertex(pos = d),
         Vertex(pos = e),
-        Vertex(pos = b),
         Vertex(pos = f),
         Vertex(pos = g),
         Vertex(pos = h)
     )
 
-    private var buffer: FloatBuffer? = null
+    val a2 = Float4(-1.1f,1.1f,1.1f,1.1f)
+    val b2 = Float4( 1.1f, 1.1f, 1.1f,1.1f)
+    val c2 = Float4(-1.1f, -1.1f, 1.1f,1.1f)
+    val d2 = Float4( 1.1f, -1.1f, 1.1f,1.1f)
+    val e2 = Float4( -1.1f, 1.1f, -1.1f,1.1f)
+    val f2 = Float4(1.1f, 1.1f, -1.1f,1.1f)
+    val g2 = Float4( -1.1f, -1.1f, -1.1f,1.1f)
+    val h2 = Float4(1.1f, -1.1f, -1.1f,1.1f)
+    val coord2 : Array<Vertex> = arrayOf(
+        Vertex(pos = a2),
+        Vertex(pos = b2),
+        Vertex(pos = c2),
+        Vertex(pos = d2),
+        Vertex(pos = e2),
+        Vertex(pos = f2),
+        Vertex(pos = g2),
+        Vertex(pos = h2)
+    )
 
-    fun vertexArray() {
-        buffer = ByteBuffer
-            .allocateDirect(coord.size * 4)
-            .order(ByteOrder.nativeOrder())
-            .asFloatBuffer()
-            .put(coord)
-
+    val mappedCoords = mutableListOf<Float>().apply {
+        coord.forEach {
+            add(it.pos.x)
+            add(it.pos.y)
+            add(it.pos.z)
+            add(it.pos.w)
+        }
     }
+
+    val mappedCoords2 = mutableListOf<Float>().apply {
+        coord2.forEach {
+            add(it.pos.x)
+            add(it.pos.y)
+            add(it.pos.z)
+            add(it.pos.w)
+        }
+    }
+
 
 
 

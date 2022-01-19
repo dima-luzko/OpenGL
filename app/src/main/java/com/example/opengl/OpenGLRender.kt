@@ -6,6 +6,8 @@ import android.opengl.GLES20
 import android.opengl.GLES20.*
 import android.opengl.GLSurfaceView
 import android.opengl.Matrix
+import android.util.Log
+import android.view.Display
 import androidx.renderscript.Float3
 import androidx.renderscript.Float4
 import com.example.opengl.data.ModelComponent
@@ -105,7 +107,7 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
             R.drawable.box5
         )
         texture = TextureUtils().loadTexture(context, textureArrayFirstModel)
-        vertexArray(ModelComponent.verticesFirstModel)
+        vertexArray(ModelComponent.mappedCoords.toFloatArray())
         getVertexAttribute(
             aPositionLocation,
             POSITION_COUNT,
@@ -124,7 +126,7 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
             R.drawable.logo
         )
         texture = TextureUtils().loadTexture(context, textureArraySecondModel)
-        vertexArray(ModelComponent.verticesSecondModel)
+        vertexArray(ModelComponent.mappedCoords2.toFloatArray())
         getVertexAttribute(
             aPositionLocation,
             POSITION_COUNT,
@@ -330,6 +332,10 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
         Matrix.setIdentityM(mModelMatrix, 0)
 
         rotate()
+
+  buildRenderIndices(ModelComponent.coord)
+//        buildRenderIndices(ModelComponent.coord2)
+
 
         glEnable(GL_CULL_FACE)
         glCullFace(GL_BACK)
