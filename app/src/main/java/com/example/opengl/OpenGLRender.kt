@@ -6,10 +6,7 @@ import android.opengl.GLES20
 import android.opengl.GLES20.*
 import android.opengl.GLSurfaceView
 import android.opengl.Matrix
-import android.util.Log
-import android.view.Display
 import androidx.renderscript.Float3
-import androidx.renderscript.Float4
 import com.example.opengl.data.ModelComponent
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -25,6 +22,7 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
     companion object {
         private const val POSITION_COUNT = 3
     }
+
     private var programId = 0
     private var texture = 0
     private var buffer: FloatBuffer? = null
@@ -107,7 +105,7 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
             R.drawable.box5
         )
         texture = TextureUtils().loadTexture(context, textureArrayFirstModel)
-        vertexArray(ModelComponent.mappedCoords.toFloatArray())
+        vertexArray(ModelComponent.mappedCoordsForFirstModel.toFloatArray())
         getVertexAttribute(
             aPositionLocation,
             POSITION_COUNT,
@@ -126,7 +124,7 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
             R.drawable.logo
         )
         texture = TextureUtils().loadTexture(context, textureArraySecondModel)
-        vertexArray(ModelComponent.mappedCoords2.toFloatArray())
+        vertexArray(ModelComponent.mappedCoordsForSecondModel.toFloatArray())
         getVertexAttribute(
             aPositionLocation,
             POSITION_COUNT,
@@ -258,7 +256,6 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
     }
 
 
-
     private fun addElementToArray(
         arr: Array<Pair<Float, Int>>,
         element1: Float,
@@ -275,7 +272,7 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
         return newArray.toTypedArray()
     }
 
-    private fun addElementToArray (arr: Array<Int>,element: Array<Int>) : Array<Int>{
+    private fun addElementToArray(arr: Array<Int>, element: Array<Int>): Array<Int> {
         val newArray = arr.toMutableList()
         newArray.addAll(element)
         return newArray.toTypedArray()
@@ -297,6 +294,7 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
             val zero = Float3(0.0f, 0.0f, -1000.0f)
             val dr = sqrt(zero.x - nextPos.x) + sqrt(zero.y - nextPos.y) + sqrt(zero.z - nextPos.z)
 
+
             maxDrRect = max(dr, maxDrRect)
             maxDrCube = max(dr, maxDrCube)
 
@@ -312,7 +310,7 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
         }
 
         val _res: Array<Int> = (0..maxDrsRects.count()).toList().toTypedArray()
-        _res.sortBy{
+        _res.sortBy {
             maxDrsCubes[maxDrsRects[it].second]
         }
 
@@ -321,7 +319,7 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
             chunk.toTypedArray().sortBy {
                 maxDrsRects[it].first
             }
-            addElementToArray(res,chunk.toTypedArray())
+            addElementToArray(res, chunk.toTypedArray())
         }
 
         return res
@@ -333,7 +331,7 @@ class OpenGLRender(private val context: Context) : GLSurfaceView.Renderer {
 
         rotate()
 
-  buildRenderIndices(ModelComponent.coord)
+        // buildRenderIndices(ModelComponent.coordForFirstModel)
 //        buildRenderIndices(ModelComponent.coord2)
 
 
